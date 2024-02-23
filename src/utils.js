@@ -1,6 +1,7 @@
-const regex = /blocked by:? ([#\d, ]+)/ig;
+const tasklistRegex = /```\[tasklist\]\n### Blocked By\n((- \[[ x]\].*\n)+)```/i;
+const issueRegex = /- \[[ x]\] #(\d+)/g;
 
-export const signature = "This comment was automatically written by the [Blocking Issues](https://github.com/Levi-Lesches/blocking-issues) bot, and this PR will be monitored for further progress.";
+export const signature = "This comment was automatically written by the [Blocking Issues](https://github.com/tristan-orourke/blocking-issues) bot, and this PR will be monitored for further progress.";
 export const defaultLabel = {
 	name: "blocked",
 	color: "000000",
@@ -10,9 +11,11 @@ export const defaultLabel = {
 export function parseBlockingIssues(body) {
 	const issues = [];
 	if (body === null) return issues;
-	for (const match of body.matchAll(regex)) {
-		for (const issue of match [1].split(", ")) {
-			const issueNumber = parseInt(issue.substring(1));
+	const blockersTasklist = body.match(tasklistRegex);
+	if (blockersTasklist) {
+		const tasks = blockersTasklist[1];
+		for (const issue of tasks.matchAll(issueRegex)) {
+			const issueNumber = parseInt(issue[1]);
 			issues.push(issueNumber);
 		}
 	}
